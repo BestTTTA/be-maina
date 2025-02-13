@@ -1,0 +1,101 @@
+generator client {
+    provider = "prisma-client-js"
+}
+
+datasource db {
+    provider = "postgresql"
+    url      = env("DATABASE_URL")
+}
+
+model user {
+  id         String        @id @default(uuid())
+  email      String        @unique
+  name       String?
+  googleId   String?       @unique
+  avatar     String?
+  markedSpots MarkedSpot[]
+  createdAt  DateTime      @default(now())
+  updatedAt  DateTime      @updatedAt
+
+  @@map("user")
+}
+
+
+model MarkedSpot {
+    id            String          @id @default(uuid())
+    lat           Float         
+    lng           Float
+    name          String         
+    description   String?        
+    spotImages    SpotImage[]    
+    fee           FeeType
+    difficulty    DifficultyLevel   
+    catches       Catch[]        
+    createdAt     DateTime       @default(now())
+    updatedAt     DateTime       @updatedAt
+    userId        String
+    user          user           @relation(fields: [userId], references: [id])
+}
+
+model SpotImage {
+    id            String      @id @default(uuid())
+    url           String
+    markedSpotId  String
+    markedSpot    MarkedSpot @relation(fields: [markedSpotId], references: [id])
+    createdAt     DateTime    @default(now())
+}
+
+model Catch {
+    id            String      @id @default(uuid())
+    fishName      String
+    images        CatchImage[] 
+    spotId        String
+    spot          MarkedSpot  @relation(fields: [spotId], references: [id])
+    bait          Bait?
+    createdAt     DateTime    @default(now())
+    updatedAt     DateTime    @updatedAt
+}
+
+model CatchImage {
+    id            String      @id @default(uuid())
+    url           String
+    catchId       String
+    catch         Catch       @relation(fields: [catchId], references: [id])
+    createdAt     DateTime    @default(now())
+}
+
+model Bait {
+    id            String             @id @default(uuid())
+    type          BaitType
+    brand         String         
+    effectiveness EffectivenessLevel
+    imageUrl      String
+    catchId       String             @unique
+    catch         Catch              @relation(fields: [catchId], references: [id])
+    createdAt     DateTime           @default(now())
+    updatedAt     DateTime           @updatedAt
+}
+
+enum FeeType {
+    PAID
+    FREE
+}
+
+enum DifficultyLevel {
+    EASY
+    MEDIUM
+    HARD
+}
+
+enum BaitType {
+    LIVE
+    ARTIFICIAL
+    NATURAL
+}
+
+enum EffectivenessLevel {
+    EXCELLENT
+    GOOD
+    FAIR
+    POOR
+}
